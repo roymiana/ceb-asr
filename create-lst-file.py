@@ -21,7 +21,12 @@ csv_files = [  'final.csv', 'ceb.csv'   ]
 
 header = [  'sample.id', 'input_handle', 
             'input_size', 'transcription'   ]
+
+remove_char = [ '. ---', '…', '﻿', '©', '',
+                '¡', '¢', '©', '­²', '³', 'º', '/', '²']
+
 log_list = []
+pre_lexicon = []
 data = []
 
 def list_to_string(s):
@@ -50,8 +55,12 @@ with alive_bar(total_log_files, title='Processing Log Files') as bar:
                     del parsed_line[:2]
 
                 transcription = list_to_string(parsed_line).replace('"', '')
-                transcription = transcription.replace('. ---', '')
-                transcription = transcription.replace('&', 'and')
+
+                for char in remove_char:
+                    transcription = transcription.replace(char, '')
+
+                transcription = transcription.replace('’', '\'').replace('—', '-').replace('–', '-')
+                transcription = transcription.replace('”', '"').replace('“', '"').replace('&', 'and')
                 transcription = re.sub("[\(\[].*?[\)\]]", "", transcription)
 
                 log_list.append([audio_file_name, transcription])
@@ -94,5 +103,3 @@ with open(csv_files[1], 'w', encoding='UTF8', newline='') as file:
     writer = csv.writer(file, delimiter=' ')
     writer.writerow(header)
     writer.writerows(data)
-
-print('Finished')
